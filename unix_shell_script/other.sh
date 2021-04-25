@@ -2,6 +2,18 @@
 
 #the below code is from the webside: 
 
+##################################################
+#Paky-mark: 获得ubuntu的版本信息
+####################################################
+uname -a
+#Linux RS-build-service 5.4.0-70-generic #78-Ubuntu SMP Fri Mar 19 13:29:52 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux
+
+lsb_release -a
+#No LSB modules are available.
+#Distributor ID: Ubuntu
+#Description:    Ubuntu 20.04.2 LTS
+#Release:        20.04
+#Codename:       focal
 
 #########################################################
 #Paky-mark：计算文档每行出现的数字个数，并计算整个文档的数字总数
