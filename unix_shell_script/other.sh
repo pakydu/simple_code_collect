@@ -701,3 +701,74 @@ while true; do
     check_ip $IP
     [ $? -eq 0 ] && break || continue
 done
+
+
+
+#监控程序：
+declare -i index=1
+
+declare -i ood=1
+
+PERFIX=`date +%2m%2d%2H%2M%Y`
+
+FIRST_FILE=/data/trace_first_$PERFIX.log
+SECNOD_FILE=/data/trace_second_$PERFIX.log
+
+call_file=/data/call.log
+
+while :
+do
+	targetStr=`/opt/SSWatchdog/SSWatchdog report | grep "DataServices"`
+
+	echo	"Next check the string: $targetStr"
+
+	tid=`echo "$targetStr" | awk '{print $2}'`
+	curr_timeStr=`echo "$targetStr" | awk '{print $5}'`
+	curr_sec=`echo "$curr_timeStr" | awk -F : '{print $1*60+$2}'`
+
+	echo "tid: $tid, curr_timeStr:$curr_timeStr, curr_sec:$curr_sec "
+
+	if [ $curr_sec -ge "160" ]; then
+		strace -s 1024 -tt -p $tid -o $call_file &
+		break
+	else
+		sleep 5
+	fi
+done
+
+
+while :
+do
+	if [ $ood == 1 ]; then
+		echo "------------------>" > $FIRST_FILE
+		date >> $FIRST_FILE
+		echo "<------------------" >> $FIRST_FILE
+		while (($index <= 50)); do
+			let ++index
+			date >> $FIRST_FILE
+			/opt/SSWatchdog/SSWatchdog report  >> $FIRST_FILE
+			top -n 1 H >> $FIRST_FILE
+			echo "------- $index -----------" >> $FIRST_FILE
+			sleep 10
+		done
+		let ood=2
+		let index=1
+	fi
+	
+	if [ $ood == 2 ]; then
+		echo "------------------>" > $SECNOD_FILE
+		date >> $SECNOD_FILE
+		echo "<------------------" >> $SECNOD_FILE
+		while (($index <= 50)); do
+			let ++index
+			date >> $SECNOD_FILE
+			/opt/SSWatchdog/SSWatchdog report  >> $SECNOD_FILE
+			top -n 1 H >> $SECNOD_FILE
+			echo "------- $index -----------" >> $SECNOD_FILE
+			sleep 10
+		done
+		let ood=1
+		let index=1
+	fi
+
+done
